@@ -15,6 +15,7 @@ import LoginPopup from './components/LoginPopup';
 import ResepMasakan from './pages/ResepMasakan';
 import TipsMasak from './pages/TipsMasak';
 import Favorit from './pages/Favorit';
+import TambahResep from './pages/resep/TambahResep';
 
 function AppContent() {
   const location = useLocation();
@@ -38,6 +39,7 @@ function AppContent() {
           <Route path="/tips-masak" element={<ProtectedRoute><TipsMasak /></ProtectedRoute>} />
           <Route path="/favorit" element={<ProtectedRoute><Favorit /></ProtectedRoute>} />
           <Route path="/resep-masakan" element={<ProtectedRoute><ResepMasakan /></ProtectedRoute>} />
+          <Route path="/tambah-resep" element={<ProtectedRoute><TambahResep /></ProtectedRoute>} />
         </Routes>
       </main>
     
