@@ -12,6 +12,7 @@ import Register from './pages/auth/Register';
 import HomeRouter from './components/HomeRouter';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPopup from './components/LoginPopup';
+import ResepMasakan from './pages/ResepMasakan';
 
 function AppContent() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function AppContent() {
           <Route path="/" element={<HomeRouter />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/resep-masakan" element={<ProtectedRoute><ResepMasakan /></ProtectedRoute>} />
         </Routes>
       </main>
     
