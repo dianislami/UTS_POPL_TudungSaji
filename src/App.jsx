@@ -8,6 +8,7 @@ import Footer from "./components/footer";
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import HomeRouter from './components/HomeRouter';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPopup from './components/LoginPopup';
@@ -29,6 +30,7 @@ function AppContent() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomeRouter />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>
