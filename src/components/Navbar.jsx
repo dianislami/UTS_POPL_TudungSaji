@@ -53,7 +53,18 @@ function Navbar (){
             >
                 Tips Masak
             </Link>
-            <a href="#about-us" className="text-black font-medium hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200">Tentang Kami</a>
+            {isAuthenticated ? (
+                <Link 
+                    to="/my-resep"
+                    className={`text-black font-medium hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200 ${
+                        location.pathname === '/my-resep' ? 'text-orange-600 underline' : ''
+                    }`}
+                >
+                    My Resep
+                </Link>
+            ) : (
+                <a href="#about-us" className="text-black font-medium hover:text-orange-600 hover:underline underline-offset-4 transition-all duration-200">Tentang Kami</a>
+            )}
             <Link 
                 to="/favorit"
                 onClick={handleProtectedMenuClick}
