@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Frontend React App
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    container_name: tudungsaji-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - tudungsaji-network
+
+  # Backend Express + MongoDB
+  backend:
+    build:
+      context: ../BE_tudungsaji
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    container_name: tudungsaji-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/tudungsaji
+      - JWT_SECRET=your-jwt-secret-here
+      - PORT=5000
+    depends_on:
+      - mongo
+    networks:
+      - tudungsaji-network
+    volumes:
+      - ../BE_tudungsaji:/app
+      - /app/node_modules
+
+  # Database MongoDB
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    container_name: tudungsaji-mongo
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=tudungsaji
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - tudungsaji-network
+
+networks:
+  tudungsaji-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
