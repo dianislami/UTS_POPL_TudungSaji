@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPopup from './components/LoginPopup';
 import ResepMasakan from './pages/ResepMasakan';
 import TipsMasak from './pages/TipsMasak';
+import Favorit from './pages/Favorit';
 
 function AppContent() {
   const location = useLocation();
@@ -35,6 +36,7 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/tips-masak" element={<ProtectedRoute><TipsMasak /></ProtectedRoute>} />
+          <Route path="/favorit" element={<ProtectedRoute><Favorit /></ProtectedRoute>} />
           <Route path="/resep-masakan" element={<ProtectedRoute><ResepMasakan /></ProtectedRoute>} />
         </Routes>
       </main>
