@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react'
+import AboutUs from '../components/AboutUs'
 
 function LandingPage() {
   const [showPopup, setShowPopup] = useState(false)
@@ -172,6 +173,9 @@ function LandingPage() {
           </button>
         </div>
       </section>
+
+      {/* 'About Us' Section */}
+      <AboutUs />
     </>
   )
 }
