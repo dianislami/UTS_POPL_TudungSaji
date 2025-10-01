@@ -3,7 +3,7 @@ import './App.css'
 
 import { AuthProvider } from './contexts/AuthContext';
 import { PopupProvider } from './contexts/PopupContext';
-import Navbar from "./components/navbar";
+import Navbar from "./components/Navbar";
 import Footer from "./components/footer";
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
@@ -18,6 +18,7 @@ import Favorit from './pages/Favorit';
 import TambahResep from './pages/resep/TambahResep';
 import TampilkanResep from './pages/resep/TampilkanResep';
 import MyResep from './pages/resep/MyResep';
+import Profil from './pages/Profil';
 
 function AppContent() {
   const location = useLocation();
@@ -25,7 +26,7 @@ function AppContent() {
   // Pages auth yang tidak menampilkan navbar dan footer
   const authPages = ['/login', '/register'];
   // Pages yang tidak menampilkan navbar dan footer
-  const noLayoutPages = ['/login', '/register', '/tambah-resep', '/tampilkan-resep'];
+  const noLayoutPages = ['/login', '/register', '/tambah-resep', '/tampilkan-resep', '/profil'];
   const isAuthPage = authPages.includes(location.pathname);
   const isNoLayoutPage = noLayoutPages.includes(location.pathname);
 
@@ -44,6 +45,7 @@ function AppContent() {
           <Route path="/tambah-resep" element={<ProtectedRoute><TambahResep /></ProtectedRoute>} />
           <Route path="/tampilkan-resep" element={<ProtectedRoute><TampilkanResep /></ProtectedRoute>} />
           <Route path="/my-resep" element={<ProtectedRoute><MyResep /></ProtectedRoute>} />
+          <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
         </Routes>
       </main>
     

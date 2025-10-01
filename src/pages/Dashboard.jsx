@@ -109,7 +109,7 @@ const Dashboard = () => {
 
       {/* Resep Terkini */}
       <section className="p-6">
-        <h3 className="text-xl font-semibold mb-2">Resep Tersimpan</h3>
+        <h3 className="text-xl font-semibold mb-2">Riwayat Resep</h3>
         <p className="mb-4">Ayo Masak!</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
