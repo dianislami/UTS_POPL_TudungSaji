@@ -4,9 +4,10 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 import Navbar from "./components/navbar";
-import Footer from "./components/footer";
+import Footer from "./components/Footer";
 import AboutUs from './components/AboutUs';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/LandingPage';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,7 +18,7 @@ function App() {
         <Navbar />
         
         <main className="flex-grow">
-          <Dashboard />
+          <LandingPage />
         </main>
         <AboutUs />
         <Footer />

@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 
-function Dashboard() {
+function LandingPage() {
   const [showPopup, setShowPopup] = useState(false)
 
   const handleFavoritClick = (e) => {
@@ -176,4 +176,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default LandingPage
