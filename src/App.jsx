@@ -4,7 +4,7 @@ import './App.css'
 import { AuthProvider } from './contexts/AuthContext';
 import { PopupProvider } from './contexts/PopupContext';
 import Navbar from "./components/Navbar";
-import Footer from "./components/footer";
+import Footer from "./components/Footer";
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
