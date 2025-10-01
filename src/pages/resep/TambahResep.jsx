@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const TambahResep = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     judul: '',
     deskripsi: '',
@@ -81,16 +82,59 @@ const TambahResep = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    const resepData = {
-      ...formData,
-      bahan: bahan.filter(b => b.trim() !== ''),
-      langkah: langkah.filter(l => l.trim() !== ''),
-      author: user?.firstName + ' ' + user?.lastName || user?.username
+    // Validasi form
+    if (!formData.judul.trim()) {
+      alert('Judul resep harus diisi!');
+      return;
+    }
+    if (!formData.deskripsi.trim()) {
+      alert('Deskripsi resep harus diisi!');
+      return;
+    }
+    if (!formData.porsi) {
+      alert('Porsi harus diisi!');
+      return;
+    }
+    if (!formData.lamaMemasak) {
+      alert('Lama memasak harus diisi!');
+      return;
+    }
+    if (bahan.filter(b => b.trim() !== '').length === 0) {
+      alert('Minimal satu bahan harus diisi!');
+      return;
+    }
+    if (langkah.filter(l => l.trim() !== '').length === 0) {
+      alert('Minimal satu langkah harus diisi!');
+      return;
+    }
+    
+    const recipeData = {
+      id: Date.now(), // Simple ID generation
+      title: formData.judul,
+      description: formData.deskripsi,
+      servings: formData.porsi,
+      cookingTime: formData.lamaMemasak,
+      ingredients: bahan.filter(b => b.trim() !== ''),
+      steps: langkah.filter(l => l.trim() !== ''),
+      image: imagePreview, // Gunakan preview image sebagai data
+      author: user?.name || user?.username || 'Anonymous',
+      createdAt: new Date().toISOString()
     };
     
-    console.log('Data resep:', resepData);
-    // TODO: Implement API call to save recipe
-    alert('Resep berhasil ditambahkan!');
+    // Simpan resep ke localStorage
+    try {
+      const existingRecipes = localStorage.getItem(`recipes_${user?.id || 'user'}`);
+      const recipes = existingRecipes ? JSON.parse(existingRecipes) : [];
+      recipes.push(recipeData);
+      localStorage.setItem(`recipes_${user?.id || 'user'}`, JSON.stringify(recipes));
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+    }
+    
+    // Navigasi ke halaman TampilkanResep dengan data resep
+    navigate('/tampilkan-resep', { 
+      state: { recipeData }
+    });
   };
 
   const handleReset = () => {
