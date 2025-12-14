@@ -1,30 +1,61 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom' 
+import resepList from '../data/reseplist' 
 
 function ResepMasakan() {
-  const [recipes] = useState([
-    { id: 1, img: "beranda1.png", title: "Resep Dimsum Mentai Enak Yang Cocok Untuk Jualan", author: "Cut Renatha" },
-    { id: 2, img: "beranda2.png", title: "Resep Rendang Daging Sapi Empuk dan Kaya Bumbu", author: "Raysha Tazkiya" },
-    { id: 3, img: "beranda3.png", title: "Resep Soto Betawi Enak, Gurih, dan Super Gampang Buat Idul Fitri", author: "Firah Maulida" },
-    { id: 4, img: "beranda4.png", title: "Resep Sate Taichan, Pedas Gurih dan Bikin Ketagihan!", author: "Khalisa Adzrani" },
-    { id: 5, img: "beranda5.png", title: "Resep Soto Pekalongan Enak Yang Cocok Untuk Berbuka", author: "Tinsari Rauhana" },
-    { id: 6, img: "beranda6.png", title: "Resep Ikan Nila Bakar yang Gurih dan Kaya Bumbu", author: "Zalvia Nasya" },
-    { id: 7, img: "beranda7.png", title: "Resep Sambal Matah Enak yang Wanginya Sampai Satu Rumah", author: "Nadia Maghda" },
-    { id: 8, img: "beranda8.png", title: "Resep Es Campur Mutiara Kuah Santan Bikin Ketagihan!", author: "Yuyun Nailufar" },
-    { id: 9, img: "beranda1.png", title: "Resep Nasi Goreng Spesial Ala Rumahan", author: "Dewi Sartika" }
-  ])
+  const [recipes] = useState(resepList)
+  const [favorites, setFavorites] = useState([])
+  
+  // State notifikasi disamakan dengan Dashboard
+  const [showNotif, setShowNotif] = useState({ show: false, message: '' })
 
-  const handleFavoriteClick = (recipeId) => {
-    console.log('Added to favorite:', recipeId)
-    // Logika untuk menambah ke favorit
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("favorites")) || []
+    setFavorites(saved)
+  }, [])
+
+  // Logic Toggle Favorit (Tambah/Hapus) - Sama seperti Dashboard
+  const handleFavoriteClick = (recipeSlug) => {
+    const recipe = recipes.find(r => r.slug === recipeSlug)
+    let updatedFavorites = [...favorites]
+    const isAlreadyFav = updatedFavorites.some(r => r.slug === recipeSlug)
+
+    if (isAlreadyFav) {
+      // Hapus dari favorit
+      updatedFavorites = updatedFavorites.filter(r => r.slug !== recipeSlug)
+      setShowNotif({ show: true, message: '❌ Dihapus dari favorit' })
+    } else {
+      // Tambah ke favorit
+      updatedFavorites.push({ ...recipe, isFavorited: true })
+      setShowNotif({ show: true, message: '❤️ Ditambahkan ke favorit' })
+    }
+
+    // Simpan ke State & LocalStorage
+    setFavorites(updatedFavorites)
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites))
+
+    // Hilangkan notifikasi setelah 2 detik
+    setTimeout(() => setShowNotif({ show: false, message: '' }), 2000)
+  }
+
+  const isFavorited = (slug) => {
+    return favorites.some(r => r.slug === slug)
   }
 
   return (
-    <div className="bg-[#ECE7D4] min-h-screen flex flex-col">
-      {/* Konten Utama */}
+    <div className="bg-[#ECE7D4] min-h-screen flex flex-col relative">
+
+      {/* NOTIFIKASI POPUP (Style disamakan dengan Dashboard) */}
+      {showNotif.show && (
+        <div className="fixed top-24 right-6 bg-black/80 text-white px-4 py-2 rounded-lg shadow-xl z-50 animate-bounce transition-all">
+          {showNotif.message}
+        </div>
+      )}
+
       <div className="flex-grow">
         {/* Breadcrumb */}
         <nav className="px-6 py-3 mx-6 mt-4 flex items-center text-sm text-black space-x-2">
-          <a href="/" className="font-semibold hover:underline transition">Beranda</a>
+          <Link to="/" className="font-semibold hover:underline transition">Beranda</Link>
           <span className="text-gray-400">/</span>
           <span className="font-semibold">Resep Masakan</span>
         </nav>
@@ -36,38 +67,65 @@ function ResepMasakan() {
           </h2>
           <p className="text-gray-600">
             Temukan berbagai resep masakan lezat dan praktis untuk setiap kesempatan.
-            Dari hidangan tradisional Indonesia hingga kreasi modern yang menggugah selera, semua resep disajikan lengkap dengan langkah-langkah mudah dan bahan yang mudah didapat.
-            Cocok untuk pemula hingga koki rumahan!
           </p>
         </section>
 
         {/* Grid Resep */}
         <section className="max-w-6xl mx-auto px-4 py-6 mb-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe) => (
-              <div key={recipe.id} className="block bg-white rounded-xl p-3 shadow hover:shadow-lg relative transition-transform duration-200 hover:scale-105 active:scale-95">
-                <a href={`/detail-resep/${recipe.id}`}>
-                  <img src={`/assets/images/${recipe.img}`} alt={recipe.title} className="rounded-lg w-full h-40 object-cover mb-3" />
-                </a>
+            {recipes.map((recipe, index) => (
+              <div key={index} className="block bg-white rounded-xl p-3 shadow hover:shadow-xl relative transition-transform duration-200 hover:scale-[1.03] active:scale-95 group">
+                
+                {/* Link ke TampilkanResep */}
+                <Link to={`/resep/${recipe.slug}`}>
+                  <div className="relative overflow-hidden rounded-lg mb-3">
+                    <img 
+                      src={recipe.image} 
+                      alt={recipe.title} 
+                      className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-110" 
+                      onError={(e) => { e.target.src = "/assets/images/placeholder.png" }}
+                    />
+                  </div>
+                </Link>
+
+                {/* Tombol Favorite */}
                 <div className="absolute top-4 right-4 flex space-x-2 z-10">
-                  <button 
-                    onClick={() => handleFavoriteClick(recipe.id)}
-                    className="p-1.5 rounded-full bg-white/70 hover:bg-white shadow-sm transition-colors duration-200" 
-                    title="Tambah ke favorit"
+                  <button
+                    onClick={(e) => {
+                        e.preventDefault(); 
+                        handleFavoriteClick(recipe.slug);
+                    }}
+                    className="p-1.5 rounded-full bg-white/80 hover:bg-white shadow transition duration-200 active:scale-95"
+                    title={isFavorited(recipe.slug) ? "Hapus Favorit" : "Tambah Favorit"}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 hover:text-red-500">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="w-6 h-6 transition-colors duration-300"
+                      fill={isFavorited(recipe.slug) ? "red" : "none"}
+                      stroke={isFavorited(recipe.slug) ? "red" : "currentColor"}
+                      strokeWidth="1.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 
+                          2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 
+                          3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                      />
                     </svg>
                   </button>
                 </div>
-                <a href={`/detail-resep/${recipe.id}`}>
-                  <h3 className="text-sm font-semibold mb-1 leading-snug">{recipe.title}</h3>
+
+                <Link to={`/resep/${recipe.slug}`}>
+                  <h3 className="text-sm font-semibold mb-1 leading-snug hover:text-orange-600 transition">{recipe.title}</h3>
                   <p className="text-xs text-gray-700">Oleh {recipe.author}</p>
-                </a>
+                </Link>
               </div>
             ))}
           </div>
         </section>
+
       </div>
     </div>
   )

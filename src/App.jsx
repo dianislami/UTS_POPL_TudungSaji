@@ -29,7 +29,6 @@ function AppContent() {
   const noLayoutPages = ['/login', '/register', '/tambah-resep', '/tampilkan-resep', '/profil'];
   const isAuthPage = authPages.includes(location.pathname);
   const isNoLayoutPage = noLayoutPages.includes(location.pathname);
-
   return (
     <div className="flex flex-col min-h-screen">
       {!isNoLayoutPage && <Navbar />}
@@ -44,6 +43,7 @@ function AppContent() {
           <Route path="/resep-masakan" element={<ProtectedRoute><ResepMasakan /></ProtectedRoute>} />
           <Route path="/tambah-resep" element={<ProtectedRoute><TambahResep /></ProtectedRoute>} />
           <Route path="/tampilkan-resep" element={<ProtectedRoute><TampilkanResep /></ProtectedRoute>} />
+          <Route path="/resep/:slug" element={<ProtectedRoute><TampilkanResep /></ProtectedRoute>} />
           <Route path="/my-resep" element={<ProtectedRoute><MyResep /></ProtectedRoute>} />
           <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
         </Routes>
