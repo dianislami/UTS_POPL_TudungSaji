@@ -18,11 +18,11 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://tudungsaji-backend.cyclic.app"
+    "VITE_API_URL": "https://tudungsaji-backend-production.up.railway.app/api"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://tudungsaji-backend.cyclic.app"
+      "VITE_API_URL": "https://tudungsaji-backend-production.up.railway.app/api"
     }
   },
   "framework": "vite",
