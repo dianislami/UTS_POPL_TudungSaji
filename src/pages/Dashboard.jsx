@@ -6,23 +6,42 @@ import resepList from '../data/reseplist';
 const Dashboard = () => {
   const { user } = useAuth();
 
-  // State untuk Search & Filter
+  // State
   const [inputValue, setInputValue] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Kategori');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [recipes, setRecipes] = useState([]);
-  const [displayedRecipes, setDisplayedRecipes] = useState([]);
+  
+  const [recipes, setRecipes] = useState([]); // Data gabungan
+  const [displayedRecipes, setDisplayedRecipes] = useState([]); // Data yang tampil (hasil filter)
   const [isSearchActive, setIsSearchActive] = useState(false);
 
-  // State untuk Favorit
+  // State Favorit
   const [favorites, setFavorites] = useState([]);
   const [showNotif, setShowNotif] = useState({ show: false, message: '' });
 
   const categories = ['Kategori', 'Makanan', 'Minuman', 'Cemilan', 'Dessert'];
 
-  // 1. Load Data Resep (Shuffle) & Load Favorit dari LocalStorage
+  // --- 1. LOAD DATA (GABUNGAN STATIS + LOCAL STORAGE) ---
   useEffect(() => {
-    // Load Resep
+    // A. Ambil Resep Statis
+    const staticRecipes = resepList;
+
+    // B. Ambil Resep User dari LocalStorage
+    let userRecipes = [];
+    try {
+        const userKey = `recipes_${user?.id || 'user'}`;
+        const stored = localStorage.getItem(userKey);
+        if (stored) {
+            userRecipes = JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error("Gagal load resep user", e);
+    }
+
+    // C. Gabungkan Keduanya
+    const combinedRecipes = [...userRecipes, ...staticRecipes];
+
+    // D. Acak Urutan (Shuffle)
     const shuffleArray = (array) => {
       const newArray = [...array];
       for (let i = newArray.length - 1; i > 0; i--) {
@@ -31,34 +50,34 @@ const Dashboard = () => {
       }
       return newArray;
     };
-    const shuffledRecipes = shuffleArray(resepList);
+
+    const shuffledRecipes = shuffleArray(combinedRecipes);
+    
+    // E. Simpan ke State
     setRecipes(shuffledRecipes);
     setDisplayedRecipes(shuffledRecipes);
 
-    // Load Favorites dari LocalStorage
+    // Load Favorites
     const savedFavs = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(savedFavs);
-  }, []);
 
-  // --- LOGIC FAVORIT (LOVE) ---
+  }, [user]); // Update jika user login/logout
+
+  // --- LOGIC FAVORIT ---
   const handleFavoriteClick = (recipe) => {
     let updatedFavorites = [...favorites];
     const isAlreadyFav = updatedFavorites.some(r => r.slug === recipe.slug);
 
     if (isAlreadyFav) {
-      // Hapus dari favorit
       updatedFavorites = updatedFavorites.filter(r => r.slug !== recipe.slug);
       setShowNotif({ show: true, message: '❌ Dihapus dari favorit' });
     } else {
-      // Tambah ke favorit
       updatedFavorites.push({ ...recipe, isFavorited: true });
       setShowNotif({ show: true, message: '❤️ Ditambahkan ke favorit' });
     }
 
     setFavorites(updatedFavorites);
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-
-    // Hide notif after 2 seconds
     setTimeout(() => setShowNotif({ show: false, message: '' }), 2000);
   };
 
@@ -66,7 +85,7 @@ const Dashboard = () => {
     return favorites.some(r => r.slug === slug);
   };
 
-  // --- LOGIC SEARCH ---
+  // --- LOGIC SEARCH & FILTER ---
   const handleSearchTrigger = () => {
     if (inputValue.trim() === '' && selectedCategory === 'Kategori') {
       setIsSearchActive(false);
@@ -77,10 +96,12 @@ const Dashboard = () => {
     setIsSearchActive(true);
     let filtered = recipes;
 
+    // Filter Kategori
     if (selectedCategory !== 'Kategori') {
       filtered = filtered.filter(recipe => recipe.category === selectedCategory);
     }
 
+    // Filter Keyword
     if (inputValue.trim() !== '') {
       const lowerQuery = inputValue.toLowerCase();
       filtered = filtered.filter(recipe =>
@@ -129,11 +150,9 @@ const Dashboard = () => {
             <p className="text-gray-700 font-medium">Mari temukan resep masakan favorit Anda</p>
           </div>
 
-          {/* Search Bar Container */}
+          {/* Search Bar */}
           <div className="w-full max-w-5xl mx-auto">
             <div className="flex items-center bg-white rounded-full shadow-lg px-2 py-2">
-              
-              {/* Dropdown Kategori */}
               <div className="relative">
                 <button 
                   onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
@@ -162,7 +181,6 @@ const Dashboard = () => {
 
               <div className="w-px h-8 bg-gray-300 mx-4"></div>
 
-              {/* Input Text */}
               <input 
                 type="text" 
                 placeholder="Temukan di Resep kami..."
@@ -172,7 +190,6 @@ const Dashboard = () => {
                 className="flex-grow text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent text-base" 
               />
               
-              {/* Tombol Search Icon */}
               <button 
                 onClick={handleSearchTrigger}
                 className="p-3 rounded-full hover:bg-gray-100 transition active:scale-95 text-orange-500 mr-1"
@@ -192,55 +209,40 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* --- BAGIAN KATEGORI --- */}
+      {/* --- KATEGORI --- */}
       {!isSearchActive && (
         <section className="px-6 md:px-12 py-8 w-full">
             <h3 className="text-xl font-bold mb-6 text-gray-800">Apa yang kamu cari?</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-
-            <a href="https://kumparan.com/berita-terkini/40-macam-bumbu-dapur-dan-fungsinya-23psys3Ak0Y" 
-                className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95"
-                target="_blank" rel="noopener noreferrer">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
-                <img src="/assets/images/3.png" alt="Bumbu" className="w-full h-48 object-cover" />
-                <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">
-                    Jenis-jenis Bumbu
+                <a href="https://kumparan.com/berita-terkini/40-macam-bumbu-dapur-dan-fungsinya-23psys3Ak0Y" target="_blank" rel="noopener noreferrer" className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95">
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                    <img src="/assets/images/3.png" alt="Bumbu" className="w-full h-48 object-cover" />
+                    <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">Jenis-jenis Bumbu</div>
+                    </div>
+                </a>
+                <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                    <img src="/assets/images/image.png" alt="Alat Masak" className="w-full h-48 object-cover" />
+                    <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">Alat Masak</div>
+                    </div>
                 </div>
+                <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                    <img src="/assets/images/gizi.png" alt="Kandungan Gizi" className="w-full h-48 object-cover" />
+                    <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">Jenis Kandungan Gizi</div>
+                    </div>
                 </div>
-            </a>
-
-            <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
-                <img src="/assets/images/image.png" alt="Alat Masak" className="w-full h-48 object-cover" />
-                <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">
-                    Alat Masak
+                <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                    <img src="/assets/images/daging.png" alt="Daging" className="w-full h-48 object-cover" />
+                    <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">Jenis Daging</div>
+                    </div>
                 </div>
-                </div>
-            </div>
-
-            <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
-                <img src="/assets/images/gizi.png" alt="Kandungan Gizi" className="w-full h-48 object-cover" />
-                <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">
-                    Jenis Kandungan Gizi
-                </div>
-                </div>
-            </div>
-
-            <div className="block transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 cursor-pointer">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden h-full">
-                <img src="/assets/images/daging.png" alt="Daging" className="w-full h-48 object-cover" />
-                <div className="p-4 bg-orange-500 text-white text-center font-bold text-base">
-                    Jenis Daging
-                </div>
-                </div>
-            </div>
-
             </div>
         </section>
       )}
 
-      {/* --- BAGIAN HASIL RESEP --- */}
+      {/* --- HASIL RESEP --- */}
       <section className="px-6 md:px-12 py-8 w-full">
         <div className="flex justify-between items-end mb-6">
             <div>
@@ -291,14 +293,10 @@ const Dashboard = () => {
                 key={index} 
                 className="transform hover:scale-[1.02] transition duration-300 block h-full group relative"
               >
-                {/* 
-                  Wrapper Link dipisah dari tombol favorite
-                  agar tombol favorite bisa diklik tanpa pindah halaman
-                */}
-                <Link to={`/resep/${recipe.slug}`} className="block h-full">
+                {/* Link Detail (PASSING STATE recipeData) */}
+                <Link to={`/resep/${recipe.slug}`} state={{ recipeData: recipe }} className="block h-full">
                   <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 h-full flex flex-col">
                     
-                    {/* Gambar */}
                     <div className="relative overflow-hidden">
                       <img 
                         src={recipe.image} 
@@ -307,13 +305,11 @@ const Dashboard = () => {
                         onError={(e) => { e.target.src = "/assets/images/placeholder.png" }}
                       />
                       
-                      {/* Badge Kategori (Kiri Atas) */}
                       <div className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full text-xs font-bold text-orange-600 shadow-sm z-10">
                          {recipe.category || "Resep"}
                       </div>
                     </div>
 
-                    {/* Konten */}
                     <div className="p-5 flex flex-col flex-grow">
                       <h4 className="font-bold text-lg text-gray-800 line-clamp-2 mb-1 leading-snug group-hover:text-orange-600 transition-colors">
                           {recipe.title}
@@ -332,11 +328,10 @@ const Dashboard = () => {
                   </div>
                 </Link>
 
-                {/* --- TOMBOL LOVE / FAVORIT (Kanan Atas) --- */}
-                {/* Ditaruh di luar Link tapi di dalam relative parent agar posisi pas */}
+                {/* Tombol Favorit */}
                 <button
                   onClick={(e) => {
-                    e.preventDefault(); // Supaya tidak masuk ke link detail
+                    e.preventDefault();
                     handleFavoriteClick(recipe);
                   }}
                   className="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/80 hover:bg-white shadow-md transition duration-200 active:scale-95 group-hover:opacity-100"
