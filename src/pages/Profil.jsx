@@ -35,7 +35,8 @@ function Profil() {
     const loadUserProfile = async () => {
       if (user && user.email) {
         try {
-          const response = await axios.get(`http://localhost:5000/api/profile/${user.email}`);
+          const API_URL = import.meta.env.VITE_API_URL || 'https://tudungsaji-backend-production.up.railway.app/api';
+          const response = await axios.get(`${API_URL}/profile/${user.email}`);
           
           if (response.data.success) {
             const userData = response.data.data;
@@ -112,7 +113,8 @@ function Profil() {
         dataToSend.append('profileImage', imageFile);
       }
 
-      const response = await axios.put('http://localhost:5000/api/profile/update', dataToSend, {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://tudungsaji-backend-production.up.railway.app/api';
+      const response = await axios.put(`${API_URL}/profile/update`, dataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -125,7 +127,7 @@ function Profil() {
           ...response.data.data 
         }));
 
-        const refreshResponse = await axios.get(`http://localhost:5000/api/profile/${formData.email}`);
+        const refreshResponse = await axios.get(`${API_URL}/profile/${formData.email}`);
         if (refreshResponse.data.success) {
           const userData = refreshResponse.data.data;
           setFormData({
@@ -159,7 +161,8 @@ function Profil() {
     setImageFile(null);
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/profile/${user.email}`);
+      const API_URL = import.meta.env.VITE_API_URL || 'https://tudungsaji-backend-production.up.railway.app/api';
+      const response = await axios.get(`${API_URL}/profile/${user.email}`);
       if (response.data.success) {
         const userData = response.data.data;
         setFormData({
@@ -188,7 +191,9 @@ function Profil() {
     if (!img) return null;
     if (img.startsWith('blob:')) return img;
     if (img.startsWith('http')) return img;
-    return `http://localhost:5000${img}`;
+    const API_BASE = import.meta.env.VITE_API_URL || 'https://tudungsaji-backend-production.up.railway.app/api';
+    const BASE_URL = API_BASE.replace('/api', '');
+    return `${BASE_URL}${img}`;
   };
 
   if (!isAuthenticated) return null;
