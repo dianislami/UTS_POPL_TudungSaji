@@ -1,40 +1,61 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom' 
+import { useAuth } from '../contexts/AuthContext' 
 import resepList from '../data/reseplist' 
 
 function ResepMasakan() {
-  const [recipes] = useState(resepList)
+  const { user } = useAuth()
+  const [recipes, setRecipes] = useState([])
   const [favorites, setFavorites] = useState([])
-  
-  // State notifikasi disamakan dengan Dashboard
   const [showNotif, setShowNotif] = useState({ show: false, message: '' })
 
+  // --- LOGIC UTAMA: GABUNGKAN RESEP STATIS + MY RESEP ---
+  useEffect(() => {
+    // 1. Ambil Resep Statis
+    const staticRecipes = resepList;
+
+    // 2. Ambil Resep User dari LocalStorage
+    let userRecipes = [];
+    try {
+        const userKey = `recipes_${user?.id || 'user'}`;
+        const stored = localStorage.getItem(userKey);
+        if (stored) {
+            userRecipes = JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error("Gagal load resep user", e);
+    }
+
+    // 3. Gabungkan
+    const combinedRecipes = [...userRecipes, ...staticRecipes];
+    
+    setRecipes(combinedRecipes);
+
+  }, [user]); 
+
+  // Load Favorit
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("favorites")) || []
     setFavorites(saved)
   }, [])
 
-  // Logic Toggle Favorit (Tambah/Hapus) - Sama seperti Dashboard
   const handleFavoriteClick = (recipeSlug) => {
     const recipe = recipes.find(r => r.slug === recipeSlug)
+    if (!recipe) return;
+
     let updatedFavorites = [...favorites]
     const isAlreadyFav = updatedFavorites.some(r => r.slug === recipeSlug)
 
     if (isAlreadyFav) {
-      // Hapus dari favorit
       updatedFavorites = updatedFavorites.filter(r => r.slug !== recipeSlug)
       setShowNotif({ show: true, message: '❌ Dihapus dari favorit' })
     } else {
-      // Tambah ke favorit
       updatedFavorites.push({ ...recipe, isFavorited: true })
       setShowNotif({ show: true, message: '❤️ Ditambahkan ke favorit' })
     }
 
-    // Simpan ke State & LocalStorage
     setFavorites(updatedFavorites)
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites))
-
-    // Hilangkan notifikasi setelah 2 detik
     setTimeout(() => setShowNotif({ show: false, message: '' }), 2000)
   }
 
@@ -45,7 +66,7 @@ function ResepMasakan() {
   return (
     <div className="bg-[#ECE7D4] min-h-screen flex flex-col relative">
 
-      {/* NOTIFIKASI POPUP (Style disamakan dengan Dashboard) */}
+      {/* NOTIFIKASI POPUP */}
       {showNotif.show && (
         <div className="fixed top-24 right-6 bg-black/80 text-white px-4 py-2 rounded-lg shadow-xl z-50 animate-bounce transition-all">
           {showNotif.message}
@@ -77,7 +98,7 @@ function ResepMasakan() {
               <div key={index} className="block bg-white rounded-xl p-3 shadow hover:shadow-xl relative transition-transform duration-200 hover:scale-[1.03] active:scale-95 group">
                 
                 {/* Link ke TampilkanResep */}
-                <Link to={`/resep/${recipe.slug}`}>
+                <Link to={`/resep/${recipe.slug}`} state={{ recipeData: recipe }}>
                   <div className="relative overflow-hidden rounded-lg mb-3">
                     <img 
                       src={recipe.image} 
@@ -85,6 +106,9 @@ function ResepMasakan() {
                       className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-110" 
                       onError={(e) => { e.target.src = "/assets/images/placeholder.png" }}
                     />
+                    
+                    {/* BAGIAN BADGE "MY RESEP" SUDAH SAYA HAPUS DISINI */}
+                    
                   </div>
                 </Link>
 
@@ -117,8 +141,10 @@ function ResepMasakan() {
                   </button>
                 </div>
 
-                <Link to={`/resep/${recipe.slug}`}>
-                  <h3 className="text-sm font-semibold mb-1 leading-snug hover:text-orange-600 transition">{recipe.title}</h3>
+                <Link to={`/resep/${recipe.slug}`} state={{ recipeData: recipe }}>
+                  <h3 className="text-sm font-semibold mb-1 leading-snug hover:text-orange-600 transition line-clamp-2">
+                    {recipe.title}
+                  </h3>
                   <p className="text-xs text-gray-700">Oleh {recipe.author}</p>
                 </Link>
               </div>
